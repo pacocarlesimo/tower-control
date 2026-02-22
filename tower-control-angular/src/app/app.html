@@ -1,0 +1,26 @@
+<div class="ops-shell">
+
+  <app-scene3d #scene3d [positions]="positions()" [incidents]="incidents()"></app-scene3d>
+
+  <!-- DRAGGABLE HUD -->
+  <div class="hud" #hud (mousedown)="startDrag($event)">
+    <div class="hud-row">
+      <span class="hud-label">MSG</span>
+      <span class="hud-value">{{ totalMessages() | number }}</span>
+    </div>
+    <div class="hud-row">
+      <span class="hud-label">INC</span>
+      <span class="hud-value" [class.alert]="incidentCount() > 0">{{ incidentCount() }}</span>
+    </div>
+    <div class="hud-divider"></div>
+    <div class="hud-label">EXPORT GEOJSON</div>
+    <div class="drone-btns">
+      @for (id of droneIds(); track id) {
+        <button class="drone-btn" (mousedown)="$event.stopPropagation()" (click)="exportDrone(id)">D{{ id }}</button>
+      }
+    </div>
+    <button class="export-all-btn" (mousedown)="$event.stopPropagation()" (click)="exportAll()">ALL DRONES</button>
+    <div class="hud-dot" [class.online]="connected()"></div>
+  </div>
+
+</div>
