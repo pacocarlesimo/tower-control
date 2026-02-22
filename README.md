@@ -242,6 +242,6 @@ At 42°N, 1° of longitude = ~82km but 1° of latitude = ~111km. Raw coordinate 
 `GEOMETRY(POINT, 4326)` with a GIST index unlocks spatial queries: `ST_DWithin` for radius search, `ST_Within` for polygon containment (no-fly zones), `ST_Distance` with correct geodesic distance. Adding a no-fly zone becomes a single spatial query rather than custom geometry code.
 
 
-![ScreenRecording2026-02-22at18 24 49-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/028258f6-a45c-42a9-b394-e5da7c950fac)
+![ScreenRecording2026-02-23at00 08 41-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/cb2eb132-d46a-4731-b9df-1c6df6861e78)
 
 
