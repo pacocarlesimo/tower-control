@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: tower_control_db
+    environment:
+      POSTGRES_DB: tower_control
+      POSTGRES_USER: tower
+      POSTGRES_PASSWORD: tower
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  pgdata:

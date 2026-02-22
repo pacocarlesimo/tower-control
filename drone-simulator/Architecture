@@ -1,0 +1,53 @@
+┌─────────────────────────────────────────────────────────────────┐
+│                        DRONE SIMULATOR                          │
+│                         (Python)                                │
+│  N drones moving over Rome, each broadcasting every ~100ms      │
+│  { id, lat, lon, speed_ms, vector[dx,dy], timestamp }           │
+└───────────────────┬─────────────────────────────────────────────┘
+                    │  TCP (newline-delimited JSON) - Own socket per drone
+                    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      VERT.X CORE SERVER                         │
+│                                                                 │
+│  NetServer (TCP listener)                                       │
+│       │                                                         │
+│       ├──► Ingest Handler                                       │
+│       │      - parse JSON frame                                 │
+│       │      - validate drone data                              │
+│       │      - publish to EventBus                              │
+│       │                                                         │
+│       ├──► Collision Engine (Verticle)                          │
+│       │      - in-memory drone state map                        │
+│       │      - project all drones 30s ahead every tick          │
+│       │      - detects intersections                            │
+│       │      - sends reroute command back via TCP               │
+│       │                                                         │
+│       ├──► PostgreSQL Writer (Verticle)                         │
+│       │      - async batch insert positions                     │
+│       │      - logs collision events & reroutes                 │
+│       │                                                         │
+│       └──► WebSocket Handler (Verticle)                         │
+│              - live drone positions + vectors                   │
+│              - reroute events                                   │
+│              - collision warnings                               │
+└──────────┬───────────────────────────┬──────────────────────────┘
+           │ WebSocket (real-time)     │ async write
+           ▼                           ▼
+┌─────────────────┐          ┌─────────────────┐
+│    ANGULAR      │          │   PostgreSQL    │
+│                 │          │                 │
+│ live 2D map     │          │ - positions     │
+│ drone vectors   │          │ - collisions    │
+│ reroute alerts  │          │ - audit log     │
+│ collision warns │          │ - drone config  │
+│                 │          └────────┬────────┘
+│                 │                   │ read
+│                 │          ┌────────▼────────┐
+│  admin panel ───┼─────────►│  SPRING BOOT    │
+│  (on demand)    │  REST    │                 │
+│  - history      │          │ - /drones       │
+│  - add drone    │          │ - /history      │
+│  - remove drone │          │ - /no-fly-zones │
+│  - no-fly zones │          │ - /incidents    │
+│  - incidents    │          │ - auth/security │
+└─────────────────┘          └─────────────────┘
