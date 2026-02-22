@@ -36,7 +36,7 @@ Hot path (fully non-blocking):
 | Real-time backend | Vert.x 4.5 |
 | Database | PostgreSQL 16 + PostGIS |
 | Drone simulator | Python 3 |
-| Frontend | Angular 19 + Three.js |
+| Frontend | Angular 21 + Three.js |
 | Infrastructure | Docker |
 
 ---
