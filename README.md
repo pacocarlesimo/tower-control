@@ -7,14 +7,14 @@ A full-stack system that ingests real-time drone telemetry over TCP, detects col
 ## Architecture
 
 ```
-┌─────────────────┐     TCP (JSON)      ┌──────────────────────────────────────────┐
-│  Python          │ ──────────────────► │  Vert.x Backend                          │
-│  Drone Simulator │                     │                                          │
-│  (10 threads)    │ ◄────────────────── │  TcpServerVerticle  ──► EventBus         │
-│                  │   REROUTE command   │  CollisionVerticle  ◄── EventBus         │
-└─────────────────┘                     │  DatabaseVerticle   ──► PostgreSQL        │
-                                        │  WebSocketVerticle  ──► Angular           │
-                                        └──────────────────────────────────────────┘
+┌─────────────────┐     TCP (JSON)       ┌──────────────────────────────────────────┐
+│  Python         │ ──────────────────►  │  Vert.x Backend                          │
+│  Drone Simulator│                      │                                          │
+│  (n threads)    │ ◄──────────────────  │  TcpServerVerticle  ──► EventBus         │
+│                 │   REROUTE command    │  CollisionVerticle  ◄── EventBus         │
+└─────────────────┘                      │  DatabaseVerticle   ──► PostgreSQL       │
+                                         │  WebSocketVerticle  ──► Angular          │
+                                         └──────────────────────────────────────────┘
                                                     │
                                          WebSocket  │
                                                     ▼
@@ -232,3 +232,8 @@ At 42°N, 1° of longitude = ~82km but 1° of latitude = ~111km. Raw coordinate 
 
 **Why PostGIS instead of plain float columns?**
 `GEOMETRY(POINT, 4326)` with a GIST index unlocks spatial queries: `ST_DWithin` for radius search, `ST_Within` for polygon containment (no-fly zones), `ST_Distance` with correct geodesic distance. Adding a no-fly zone becomes a single spatial query rather than custom geometry code.
+
+
+![ScreenRecording2026-02-22at18 24 49-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/028258f6-a45c-42a9-b394-e5da7c950fac)
+
+
