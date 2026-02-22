@@ -7,21 +7,27 @@ A full-stack system that ingests real-time drone telemetry over TCP, detects col
 ## Architecture
 
 ```
-┌─────────────────┐     TCP (JSON)       ┌──────────────────────────────────────────┐
-│  Python         │ ──────────────────►  │  Vert.x Backend                          │
-│  Drone Simulator│                      │                                          │
-│  (n threads)    │ ◄──────────────────  │  TcpServerVerticle  ──► EventBus         │
-│                 │   REROUTE command    │  CollisionVerticle  ◄── EventBus         │
-└─────────────────┘                      │  DatabaseVerticle   ──► PostgreSQL       │
-                                         │  WebSocketVerticle  ──► Angular          │
-                                         └──────────────────────────────────────────┘
-                                                    │
-                                         WebSocket  │
-                                                    ▼
-                                        ┌─────────────────────┐
-                                        │  Angular + Three.js │
-                                        │  3D Live View       │
-                                        └─────────────────────┘
+┌─────────────────┐     TCP (JSON)       ┌──────────────────────────────────────────────────┐
+│  Python         │ ──────────────────►  │  Vert.x Backend                                  │
+│  Drone Simulator│                      │                                                  │
+│  (n threads)    │ ◄──────────────────  │  TcpServerVerticle ────► request/reply:          │
+│                 │   REROUTE command    │    ↑ pause/resume        IngestionVerticle       │
+└─────────────────┘                      │    └──── 429 ◄───────── (ArrayDeque)             │
+                                         │                           │ drain 500/tick       │
+                                         │                           ▼ publish              │
+                                         │                         EventBus                 │
+                                         │                           ├──► CollisionVerticle │
+                                         │                           ├──► DatabaseVerticle  │
+                                         │                           └──► WebSocketVerticle │
+                                         └──────────────────────────────────────────────────┘
+                                                                     │              │
+                                                               PostgreSQL       WebSocket
+                                                                                    ▼
+                                                                        ┌─────────────────────┐
+                                                                        │  Angular + Three.js │
+                                                                        │  3D Live View       │
+                                                                        └─────────────────────┘
+                                                     
 ```
 
 Hot path (fully non-blocking):
@@ -49,6 +55,7 @@ Hot path (fully non-blocking):
 - All positions persisted to PostGIS as `GEOMETRY(POINT, 4326)`
 - 3D airplane models oriented to their real flight vector
 - GeoJSON export of full flight history per drone
+- Backpressure system — bounded ingestion queue prevents event loop saturation under burst load
 
 ---
 
@@ -66,6 +73,7 @@ tower-control/
 │       ├── MainVerticle.java
 │       ├── TcpServerVerticle.java
 │       ├── DroneFrameParser.java
+│       ├── IngestionVerticle.java
 │       ├── DatabaseVerticle.java
 │       ├── CollisionVerticle.java
 │       └── WebSocketVerticle.java
