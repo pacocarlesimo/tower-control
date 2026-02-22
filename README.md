@@ -49,7 +49,7 @@ Hot path (fully non-blocking):
 
 ## Features
 
-- 10 drones streaming position at 10Hz over persistent TCP connections
+- Configurable number of drones streaming position updates over persistent TCP connections (tested with 50+ drones at 10Hz)
 - Collision detection with 30-second trajectory projection and automatic REROUTE
 - Waypoint-based flight plans across opposite edges of Rome's airspace
 - All positions persisted to PostGIS as `GEOMETRY(POINT, 4326)`
